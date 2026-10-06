@@ -171,11 +171,11 @@ Mera gives each user a plain EOA derived from their passkey, and it has no payma
 
 Relayer rules (`/api/relay`):
 
-- It requires a SIWE session, and the session address must equal the signer.
-- Targets are allowlisted (only the forwarder → `Kinpot`, or `Kinpot.contributeWithAuthorization`), and so are the function selectors.
-- It simulates with `eth_call` before sending. On Monad you pay for the gas limit you declare, not the gas used, so the relayer sets the limit to the estimate plus 15%.
-- It enforces a per-address daily cap and a global daily MON budget, and logs every job to `relay_jobs`.
-- Wallet users can skip the relayer and pay their own gas.
+- Forwarded calls must target `Kinpot`, carry no value, and use an allowlisted function (`createPot`, `confirmBill`, `declineBill`, `cancel`, `claimRefund`). The request must pass `forwarder.verify` and be within its deadline.
+- Every call is simulated first. Forwarded calls are also simulated directly as the signer, because the forwarder hides the inner revert reason, and users should see "Only the payee can do that," not "FailedCall."
+- On Monad you pay for the gas limit you declare, not the gas used, so the relayer sets the limit to the estimate plus 15%.
+- Rate limits apply per IP and per signer (in memory, best effort). The testnet faucet is limited per address.
+- Wallet users can skip the relayer and pay their own gas with `contribute`.
 
 ## 6. Off-chain data
 
@@ -362,14 +362,14 @@ kinpot/
 
 Today is Mon 6 Oct. The deadline is Mon 13 Oct.
 
-| # | Target | Milestone | Demo at the end |
+| # | Target | Milestone | Status |
 |---|---|---|---|
-| M1 | Tue 7 Oct | **Thinnest slice.** `Kinpot` + forwarder + `MockAUSD` (with EIP-3009); unit tests; fork test of `receiveWithAuthorization` against mainnet AUSD; testnet deploy; a bare Next.js page with an injected wallet; live on Vercel. | Create → contribute → confirm → release on testnet in the browser. |
-| M2 | Wed 8 Oct | **Passkeys and gasless.** Mera connector, SIWE session, `/api/relay` (forwarder + EIP-3009), budgets and rate limits, testnet faucet. | A brand-new passkey user with 0 MON pays a share, and a payee confirms. |
-| M3 | Thu 9 – Fri 10 Oct | **The product.** Neon schema, payee directory, bill details with a hash check, sibling shares, `/new`, `/p/[slug]`, `/payee`, `/me`, WhatsApp share, naira estimate, design pass. | The full family story on the real UI. |
-| M4 | Sat 11 Oct | **Indexer and automation.** Envio indexer for the feed and lists; `KinpotAutomation` + CRE cron workflow; Vercel Cron fallback. | A pot pays itself on its due date. An expired pot refunds itself. |
-| M5 | Sun 12 Oct | **Mainnet and hardening.** Fuzz and invariant suite (I1–I7), mainnet deploy with real AUSD, verified contracts, on-ramp link, empty, loading and error states. | A real AUSD pot, a few dollars, paid on mainnet. |
-| M6 | Mon 13 Oct | **Submission.** README, `.env.example`, 2–3 min demo script and video, write-up, submit. | Submitted. |
-| Stretch | n/a | Opt-in float yield via earnAUSD (§11). | n/a |
+| M1 | Tue 7 Oct | **Thinnest slice.** `Kinpot` + forwarder + `MockAUSD` (with EIP-3009); unit tests; fork test against mainnet AUSD; local deploy; web app; end-to-end script. | ✅ Done 6 Oct, locally. Testnet deploy waits on faucet MON. |
+| M2 | Wed 8 Oct | **Passkeys and gasless.** Mera passkey accounts, `/api/relay` (forwarder + EIP-3009), rate limits, testnet faucet. | ✅ Done 6 Oct. |
+| M3 | Thu 9 – Fri 10 Oct | **The product.** Database, payee directory, bill hash check, sibling shares, `/new`, `/p/[slug]`, `/payee`, dashboard, WhatsApp share, naira estimate, design pass. | ✅ Done 6 Oct. Design pass continues. |
+| M4 | Sat 11 Oct | **Indexer and automation.** Envio indexer and activity feed; `KinpotAutomation` + CRE workflow (compiles to wasm); GitHub Actions fallback keeper. | ✅ Built 6 Oct. Live runs wait on the testnet deploy. |
+| M5 | Sun 12 Oct | **Mainnet and hardening.** Invariant suite (I1–I7), 98.6% line coverage, clean `forge lint`, Ramp on-ramp, then mainnet deploy with real AUSD. | Invariants, coverage, lint and on-ramp done. Deploys pending. |
+| M6 | Mon 13 Oct | **Submission.** README, `.env.example`, demo script and video, write-up, submit. | Not started. |
+| Stretch | n/a | Opt-in float yield via earnAUSD (§11). | Not started. |
 
 Bounties targeted: Consumer Products & Payments track, Grand Champion, Agora cross-border payments, Mera UX, Mera Passkeys, Chainlink CRE, Envio.
