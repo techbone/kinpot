@@ -32,5 +32,6 @@ line_length = 120
 [lint]
 # block-timestamp: due dates and expiries are the product; seconds of drift don't matter at day scale.
 # calls-loop: the refund loop is bounded (32 contributors) and isolated per contributor.
-exclude_lints = ["block-timestamp", "calls-loop"]
-ignore = ["test/**", "script/**"]
+# reentrancy-events: KinpotAutomation only calls the immutable Kinpot, which is nonReentrant.
+exclude_lints = ["block-timestamp", "calls-loop", "reentrancy-events"]
+ignore = ["test/**", "script/**", "src/mocks/**"]

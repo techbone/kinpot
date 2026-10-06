@@ -31,8 +31,12 @@ contract KinpotAutomation is IReceiver {
 
     error InvalidSender(address sender);
     error BatchTooLarge();
+    error ZeroAddress();
 
     constructor(Kinpot kinpot_, address forwarder_, address simulationForwarder_) {
+        if (address(kinpot_) == address(0) || forwarder_ == address(0) || simulationForwarder_ == address(0)) {
+            revert ZeroAddress();
+        }
         kinpot = kinpot_;
         forwarder = forwarder_;
         simulationForwarder = simulationForwarder_;
@@ -74,8 +78,8 @@ contract KinpotAutomation is IReceiver {
 
         uint256[] memory rel = new uint256[](MAX_BATCH);
         uint256[] memory ref = new uint256[](MAX_BATCH);
-        uint256 nRel;
-        uint256 nRef;
+        uint256 nRel = 0;
+        uint256 nRef = 0;
         for (uint256 id = fromId; id < end && nRel + nRef < MAX_BATCH; ++id) {
             if (kinpot.canRelease(id)) rel[nRel++] = id;
             else if (kinpot.canRefund(id)) ref[nRef++] = id;

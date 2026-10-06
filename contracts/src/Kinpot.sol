@@ -111,6 +111,8 @@ contract Kinpot is ERC2771Context, ReentrancyGuard {
         pot.expiresAt = expiresAt;
         pot.status = Status.Open;
         pot.payee = payee;
+        // casting to 'uint96' is safe because target > type(uint96).max reverted above
+        // forge-lint: disable-next-line(unsafe-typecast)
         pot.target = uint96(target);
         pot.billHash = billHash;
 
@@ -134,6 +136,8 @@ contract Kinpot is ERC2771Context, ReentrancyGuard {
     function contribute(uint256 potId, uint256 amount) external nonReentrant {
         address from = _msgSender();
         _recordContribution(potId, from, amount);
+        // `from` is the verified sender (direct, or via the trusted ERC-2771 forwarder).
+        // forge-lint: disable-next-line(arbitrary-send-erc20)
         ausd.safeTransferFrom(from, address(this), amount);
     }
 
@@ -141,6 +145,9 @@ contract Kinpot is ERC2771Context, ReentrancyGuard {
     ///         can submit it and the contributor never needs gas.
     /// @dev    The authorization nonce must be `keccak256(abi.encode(potId, salt))`. That binds the
     ///         signature to this pot, so a submitter cannot redirect it to another one.
+    // State is final before the AUSD call and the function is nonReentrant; the lint flags OZ's own
+    // `_status` reset after the call.
+    // forge-lint: disable-next-item(reentrancy-no-eth)
     function contributeWithAuthorization(
         uint256 potId,
         address from,
@@ -283,6 +290,8 @@ contract Kinpot is ERC2771Context, ReentrancyGuard {
             _contributors[potId].push(from);
         }
         contributed[potId][from] += amount;
+        // casting to 'uint96' is safe because amount <= target - raised and target fits in uint96
+        // forge-lint: disable-next-line(unsafe-typecast)
         pot.raised += uint96(amount);
         emit Contributed(potId, from, amount, pot.raised);
     }
