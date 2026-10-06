@@ -75,7 +75,7 @@ flowchart LR
 | `Kinpot` | Immutable, no admin | Holds every pot's AUSD with per-pot accounting. The state machine, release and refunds. |
 | `ERC2771Forwarder` (OpenZeppelin) | Immutable | Verifies users' EIP-712 signed requests so the relayer can pay gas for `createPot`, `confirmBill`, `declineBill` and `cancel`. |
 | `KinpotAutomation` | Immutable | Chainlink CRE `IReceiver`. Decodes a report of pot IDs and calls `release` or `refund` on each, isolated by `try/catch`. Accepts reports only from the Chainlink forwarder. |
-| Web app (Next.js) | Untrusted convenience | Every screen, plus API routes for SIWE sessions, bill metadata and the relayer. |
+| Web app (Next.js) | Untrusted convenience | Every screen, plus API routes for the relayer, bill details, names, the payee directory and the fallback keeper. |
 | Relayer (`/api/relay`) | Untrusted, gas only | Holds a MON-funded hot key. It simulates, rate-limits and submits signed requests. Losing the key costs the MON budget, never user funds. |
 | Neon Postgres | Context only | Profiles, payee directory, bill details, sibling shares, relay log. |
 | Envio HyperIndex | Read model | Indexes `Kinpot` events into pot lists, the payee inbox and the activity feed (GraphQL). |
@@ -268,7 +268,7 @@ Next.js 16 (App Router), React 19, wagmi 3, viem 2, TanStack Query and Tailwind 
 | `/p/[slug]` | The page shared to WhatsApp. Progress, who has paid their share, payee and confirmation status, due countdown, Pay my share, activity feed, and the receipt with tx hash once paid. |
 | `/payee` | Payee inbox: incoming bills with references, confirm or decline, payments received. |
 | `/me` | My pots, organized and contributed. |
-| `/api/session`, `/api/relay`, `/api/pots`, `/api/payees`, `/api/keeper` | SIWE, relayer, metadata, directory, and the cron fallback. |
+| `/api/relay`, `/api/pots`, `/api/claims`, `/api/profile`, `/api/payees`, `/api/fx`, `/api/keeper` | Relayer, bill details, share claims, names, payee directory, naira rate, fallback keeper. |
 
 **Design direction**
 
