@@ -1,0 +1,43 @@
+"One pot per (chain, potId). `id` is `${chainId}-${potId}`."
+type Pot {
+  id: ID!
+  chainId: Int!
+  potId: BigInt!
+  organizer: String! @index
+  payee: String! @index
+  target: BigInt!
+  raised: BigInt!
+  dueAt: BigInt!
+  expiresAt: BigInt!
+  "Open, Paid or Closed"
+  status: String!
+  payeeConfirmed: Boolean!
+  refunded: Boolean!
+  billHash: String!
+  contributorCount: Int!
+  createdAt: BigInt!
+  createdTx: String!
+  paidAt: BigInt
+  paidTx: String
+}
+
+"Everyone who has paid into a pot, so 'pots I chipped into' is one query."
+type Participant {
+  id: ID!
+  pot_id: String! @index
+  address: String! @index
+  contributed: BigInt!
+  refunded: BigInt!
+}
+
+"The pot page's activity feed: every event, in order."
+type Activity {
+  id: ID!
+  pot_id: String! @index
+  "created, contributed, confirmed, declined, cancelled, paid, closed, refunded, refund_failed"
+  kind: String!
+  actor: String
+  amount: BigInt
+  timestamp: BigInt!
+  txHash: String!
+}

@@ -1,0 +1,14 @@
+{
+  "name": "kinpot-indexer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codegen": "envio codegen",
+    "dev": "envio dev",
+    "start": "envio start"
+  },
+  "dependencies": {
+    "envio": "^3.12.1",
+    "typescript": "^5.9.3"
+  }
+}

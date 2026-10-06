@@ -22,7 +22,8 @@ function slug() {
 /**
  * GET ?slug=…                       → one pot's metadata, with network and potId
  * GET ?network=…&potId=…            → one pot's metadata
- * GET ?network=…&address=…          → pots this address started or is the payee of
+ * GET ?network=…&address=…          → pots this address started, is the payee of, or claimed a share in
+ * GET ?network=…&ids=1,2,3           → summaries for these pots (e.g. ones the indexer says you paid into)
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -52,6 +53,18 @@ export async function GET(req: Request) {
     return Response.json({ meta: row ? await metaFor(row) : null });
   }
 
+  const ids = url.searchParams.get("ids");
+  if (ids) {
+    const list = ids.split(",").filter((id) => /^\d+$/.test(id)).slice(0, 100);
+    const rows = list.length
+      ? await d
+          .select()
+          .from(schema.pots)
+          .where(and(eq(schema.pots.scope, scope), inArray(schema.pots.potId, list)))
+      : [];
+    return Response.json({ pots: rows.map(summary) });
+  }
+
   if (address && isAddress(address)) {
     const a = getAddress(address);
     const rows = await d
@@ -69,20 +82,22 @@ export async function GET(req: Request) {
           .from(schema.pots)
           .where(and(eq(schema.pots.scope, scope), inArray(schema.pots.potId, extraIds)))
       : [];
-    return Response.json({
-      pots: [...rows, ...extra].map((r) => ({
-        potId: r.potId,
-        slug: r.slug,
-        title: r.bill.title,
-        category: r.bill.category,
-        payeeName: r.bill.payeeName,
-        organizer: r.organizer,
-        payee: r.payee,
-      })),
-    });
+    return Response.json({ pots: [...rows, ...extra].map(summary) });
   }
 
   return fail("Missing query.");
+}
+
+function summary(r: typeof schema.pots.$inferSelect) {
+  return {
+    potId: r.potId,
+    slug: r.slug,
+    title: r.bill.title,
+    category: r.bill.category,
+    payeeName: r.bill.payeeName,
+    organizer: r.organizer,
+    payee: r.payee,
+  };
 }
 
 async function metaFor(row: typeof schema.pots.$inferSelect): Promise<PotMeta> {

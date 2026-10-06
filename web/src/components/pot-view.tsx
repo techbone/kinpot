@@ -14,6 +14,7 @@ import { phaseOf, type Phase } from "@/lib/kinpot";
 import { messageDomain, PAYEE_KINDS, shareClaimTypes, type PayeeKind } from "@/lib/messages";
 import { explorerUrl, networks, type NetworkKey } from "@/lib/networks";
 import { usePot, type PotData } from "@/lib/use-pot";
+import { ActivityFeed } from "./activity";
 import { PhasePill } from "./phase";
 import { useAccount, useNetwork } from "./providers";
 import { SignInGate } from "./sign-in";
@@ -92,6 +93,7 @@ function PotLoaded({ network, data, now }: { network: NetworkKey; data: PotData;
 
         <div className="min-w-0 lg:col-start-1">
           <Shares data={data} nameOf={nameOf} />
+          <ActivityFeed network={network} potId={pot.id} nameOf={nameOf} payeeName={payeeName} />
           <Details data={data} network={network} />
         </div>
       </div>

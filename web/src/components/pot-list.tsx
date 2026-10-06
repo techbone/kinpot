@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Address } from "viem";
 
 import { CATEGORIES, type Category } from "@/lib/bill";
+import { fetchContributedPotIds, hasIndexer } from "@/lib/indexer";
 import { formatUsd } from "@/lib/format";
 import { useNow } from "@/lib/hooks";
 import { phaseOf, readPot, type Pot } from "@/lib/kinpot";
@@ -30,7 +31,17 @@ export function usePotList(network: NetworkKey, address: Address | undefined) {
     refetchInterval: 10_000,
     queryFn: async () => {
       const res = await fetch(`/api/pots?network=${network}&address=${address}`);
-      const { pots } = (await res.json()) as { pots: PotSummary[] };
+      let { pots } = (await res.json()) as { pots: PotSummary[] };
+      // The indexer also knows pots you paid into without picking a named share.
+      if (hasIndexer(network)) {
+        const ids = (await fetchContributedPotIds(network, address!).catch(() => [])).filter(
+          (id) => !pots.some((p) => p.potId === id),
+        );
+        if (ids.length) {
+          const more = (await (await fetch(`/api/pots?network=${network}&ids=${ids.join(",")}`)).json()) as { pots: PotSummary[] };
+          pots = [...pots, ...more.pots];
+        }
+      }
       const onchain = await Promise.all(pots.map((p) => readPot(network, BigInt(p.potId))));
       return pots
         .map((summary, i) => ({ summary, pot: onchain[i] }))

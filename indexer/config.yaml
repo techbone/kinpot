@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: kinpot
+description: Kinpot pots, contributions and activity on Monad
+field_selection:
+  transaction_fields:
+    - hash
+contracts:
+  - name: Kinpot
+    events:
+      - event: "PotCreated(uint256 indexed potId, address indexed organizer, address indexed payee, uint256 target, uint40 dueAt, uint40 expiresAt, bytes32 billHash)"
+      - event: "Contributed(uint256 indexed potId, address indexed contributor, uint256 amount, uint256 raised)"
+      - event: "BillConfirmed(uint256 indexed potId, address indexed payee)"
+      - event: "BillDeclined(uint256 indexed potId, address indexed payee)"
+      - event: "PotCancelled(uint256 indexed potId, address indexed organizer)"
+      - event: "PotPaid(uint256 indexed potId, address indexed payee, uint256 amount)"
+      - event: "PotClosed(uint256 indexed potId)"
+      - event: "Refunded(uint256 indexed potId, address indexed contributor, uint256 amount)"
+      - event: "RefundFailed(uint256 indexed potId, address indexed contributor, uint256 amount)"
+chains:
+  - id: 10143 # Monad testnet
+    start_block: 0
+    contracts:
+      - name: Kinpot
+        address: "0x0000000000000000000000000000000000000000"
