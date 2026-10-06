@@ -79,7 +79,8 @@ flowchart LR
 | Relayer (`/api/relay`) | Untrusted, gas only | Holds a MON-funded hot key. It simulates, rate-limits and submits signed requests. Losing the key costs the MON budget, never user funds. |
 | Neon Postgres | Context only | Profiles, payee directory, bill details, sibling shares, relay log. |
 | Envio HyperIndex | Read model | Indexes `Kinpot` events into pot lists, the payee inbox and the activity feed (GraphQL). |
-| Chainlink CRE workflow | Untrusted trigger | A cron trigger finds pots that are due or expired and sends a signed report to `KinpotAutomation`. |
+| Chainlink CRE workflow | Untrusted trigger | Every minute it reads `KinpotAutomation.pending()` and, if anything is due or expired, sends a signed report of pot IDs to `KinpotAutomation`. |
+| Fallback keeper (`/api/keeper`) | Untrusted trigger | Called every 5 minutes by a GitHub Actions schedule. Reads the same `pending()` and calls `release` / `refund` through the relayer. |
 
 ## 4. Contracts
 
@@ -182,11 +183,10 @@ Relayer rules (`/api/relay`):
 
 | Table | Columns | Notes |
 |---|---|---|
-| `users` | `address` PK, `display_name`, `phone?`, `created_at` | Created on first SIWE sign-in. |
+| `profiles` | `address` PK, `name`, `created_at` | The display name the family sees. Set with a signed EIP-712 `Profile` message. |
 | `payees` | `id`, `address` unique, `name`, `kind` (school · hospital · landlord · utility · other), `city`, `verified`, `verified_note`, `created_by`, `created_at` | Verified institutions get a badge. Verification is manual during the hackathon. |
-| `pots` | `pot_id` PK, `chain_id`, `slug` (random, used in the share link), `title`, `category`, `note`, `bill` jsonb (invoice no., student or patient name, term), `bill_hash`, `organizer`, `created_at` | `bill_hash` must equal the onchain `billHash`. The page shows a check. |
-| `shares` | `id`, `pot_id`, `name`, `expected_amount`, `address?`, `invite_token` | "Kemi: $150". Linked to an address when Kemi pays. |
-| `relay_jobs` | `id`, `address`, `kind`, `tx_hash`, `gas_limit`, `status`, `created_at` | Rate limiting and an audit trail. |
+| `pots` | (`scope`, `pot_id`) PK, `slug` (random, used in the share link), `bill` jsonb (title, category, payee name, reference, note, shares), `bill_hash`, `organizer`, `payee`, `created_at` | `scope` is `chainId:kinpotAddress`, so a redeployed contract never inherits old rows. `bill_hash` must equal the onchain `billHash` or the API rejects the write. |
+| `share_claims` | (`scope`, `pot_id`, `share_index`) PK, `address` | "I'm Kemi". Signed with an EIP-712 `ShareClaim`, accepted only after that address has contributed. |
 
 ### 6.2 Envio entities
 
@@ -287,9 +287,9 @@ Next.js 16 (App Router), React 19, wagmi 3, viem 2, TanStack Query and Tailwind 
 | Accounts | Mera (`@category-labs/mera`) plus injected wallets | Passkey EOAs built for Monad, with no bundler or MPC. They target the Mera UX and Mera Passkeys bounties. Injected wallets are the fallback where WebAuthn PRF isn't available. |
 | Database | Neon Postgres + Drizzle | Free tier, serverless driver that works on Vercel, typed schema. |
 | Indexer | Envio HyperIndex | Supports Monad (HyperSync on 143 and 10143), has free hosting, and targets the Envio bounty. |
-| Automation | Chainlink CRE (cron → EVM write), with a Vercel Cron fallback | CRE supports Monad (CLI v1.29+ mainnet, v1.30+ testnet) and targets the CRE bounty. Because release and refund are permissionless, the fallback needs no extra trust. |
+| Automation | Chainlink CRE (cron → EVM read → signed report → EVM write), with a GitHub Actions fallback | CRE supports Monad and targets the CRE bounty. Vercel's Hobby plan only allows daily crons, so the fallback runs from GitHub's scheduler. Because release and refund are permissionless, the fallback needs no extra trust. |
 | Hosting | Vercel | Preview deploys and cron. |
-| On-ramp | Ramp Network or Mercuryo (sponsor) widget | A "Buy AUSD" link. AUSD-on-Monad support is to be verified in M5. |
+| On-ramp | Ramp Network hosted widget | Ramp sells `MONAD_AUSD` (the same contract we use) by card and bank in the UK, US and most countries outside the EU. Checked against Ramp's asset API. |
 
 Deliberately not used: Privy and Dynamic. One account system is enough, and Mera is Monad-native.
 
@@ -304,6 +304,8 @@ Deliberately not used: Privy and Dynamic. One account system is enough, and Mera
 | AUSD `permit` (v,r,s and bytes) | present |
 | AUSD `receiveWithAuthorization` / `transferWithAuthorization` / `cancelAuthorization` | present |
 | Envio HyperSync | `143.hypersync.xyz` |
+| Chainlink CRE forwarder | mainnet `0x76c9cf548b4179F8901cda1f8623568b58215E62` (simulation `0x9eF6468C5f37b976E57d52054c693269479A784d`); testnet `0xF8344CFd5c43616a4366C34E3EEE75af79a74482` (simulation `0xB9F79d863261869B234c481D1f9A7af84AeAd192`). Code present at all four. |
+| Ramp asset | `MONAD_AUSD` → `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a` |
 | earnAUSD vault (Upshift) | `0x36eDbF0C834591BFdfCaC0Ef9605528c75c406aA`: `asset()` = AUSD, `lagDuration()` = 259200 s (72 h), `instantRedemptionFee()` = 20. Standard ERC-4626 views revert at this address. |
 
 ## 11. Decision log
@@ -315,6 +317,10 @@ Deliberately not used: Privy and Dynamic. One account system is enough, and Mera
 | 2026-10-06 | **One escrow contract, not a clone per pot.** | Funds are escrowed rather than held as allowances, so isolation through clones adds gas and complexity without adding safety. |
 | 2026-10-06 | **Mera only, no Privy or Dynamic.** | One account system, native to Monad, with two bounties. |
 | 2026-10-06 | **Contributions capped at the remaining amount.** | There's no surplus to distribute. The UI pre-fills the remaining amount. A rare last-share race fails cleanly, and the sibling re-signs. |
+| 2026-10-06 | **Database moved into M1.** | Pot titles, sibling names and the payee directory are needed from the first screen. Local dev uses embedded Postgres (PGlite); production uses Neon. Same schema. |
+| 2026-10-06 | **No SIWE session; every write is a signed EIP-712 message.** | Each off-chain write (profile, share claim, payee registration) carries its own signature, and pot details are checked against the onchain hash. That removes session state without weakening anything. |
+| 2026-10-06 | **Deadlines and due dates use chain time.** | Phone clocks can be minutes off. Signatures and schedules are computed from the latest block's timestamp. |
+| 2026-10-06 | **Fallback keeper on GitHub Actions, not Vercel Cron.** | The Vercel Hobby plan limits crons to once a day. |
 
 ## 12. Out of scope (hackathon)
 
