@@ -21,6 +21,11 @@ async function post(body: Record<string, unknown>): Promise<RelayResult> {
   return json;
 }
 
+/** Deadlines follow chain time, not the device clock, which can be wrong on phones. */
+async function chainNow(network: NetworkKey): Promise<number> {
+  return Number((await publicClient(network).getBlock()).timestamp);
+}
+
 function deployment(network: NetworkKey) {
   const d = networks[network].deployment;
   if (!d) throw new Error(`Kinpot isn't deployed on ${networks[network].label} yet.`);
@@ -37,7 +42,7 @@ async function forward(network: NetworkKey, signer: Signer, data: Hex, gas: bigi
     functionName: "nonces",
     args: [signer.address],
   });
-  const deadline = Math.floor(Date.now() / 1000) + 30 * 60;
+  const deadline = (await chainNow(network)) + 30 * 60;
   const message = { from: signer.address, to: d.kinpot, value: 0n, gas, nonce, deadline, data };
   const signature = await signer.signTypedData({
     domain: { name: "Kinpot", version: "1", chainId: networks[network].chain.id, verifyingContract: d.forwarder },
@@ -114,7 +119,7 @@ export async function contribute(network: NetworkKey, signer: Signer, potId: big
   });
   const salt = toHex(crypto.getRandomValues(new Uint8Array(32)));
   const validAfter = 0n;
-  const validBefore = BigInt(Math.floor(Date.now() / 1000) + 30 * 60);
+  const validBefore = BigInt((await chainNow(network)) + 30 * 60);
   const signature = await signer.signTypedData({
     domain: { name, version, chainId, verifyingContract },
     types: {

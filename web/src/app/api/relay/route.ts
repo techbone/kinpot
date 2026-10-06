@@ -103,6 +103,8 @@ export async function POST(req: Request) {
           data: r.data as Hex,
           signature: r.signature as Hex,
         };
+        const block = await publicClient(network).getBlock();
+        if (request.deadline < Number(block.timestamp)) return fail(ERROR_TEXT.ERC2771ForwarderExpiredRequest);
         const valid = await publicClient(network).readContract({
           address: d.forwarder,
           abi: forwarderAbi,

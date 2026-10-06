@@ -27,6 +27,9 @@ const client = createPublicClient({ transport: http(rpc) });
 const kinpotAbi = JSON.parse(readFileSync(new URL("../../contracts/out/Kinpot.sol/Kinpot.json", import.meta.url))).abi;
 const forwarderAbi = JSON.parse(readFileSync(new URL("../../contracts/out/ERC2771Forwarder.sol/ERC2771Forwarder.json", import.meta.url))).abi;
 
+// Deadlines follow chain time, which runs ahead of the wall clock after an anvil time jump.
+const chainNow = async () => Number((await client.getBlock()).timestamp);
+
 async function api(path, body) {
   const res = await fetch(`${base}${path}`, {
     method: body ? "POST" : "GET",
@@ -41,7 +44,7 @@ async function api(path, body) {
 async function forward(account, functionName, args) {
   const data = encodeFunctionData({ abi: kinpotAbi, functionName, args });
   const nonce = await client.readContract({ address: d.forwarder, abi: forwarderAbi, functionName: "nonces", args: [account.address] });
-  const message = { from: account.address, to: d.kinpot, value: 0n, gas: 250_000n, nonce, deadline: Math.floor(Date.now() / 1000) + 1800, data };
+  const message = { from: account.address, to: d.kinpot, value: 0n, gas: 250_000n, nonce, deadline: (await chainNow()) + 1800, data };
   const signature = await account.signTypedData({
     domain: { name: "Kinpot", version: "1", chainId, verifyingContract: d.forwarder },
     types: {
@@ -64,7 +67,7 @@ async function forward(account, functionName, args) {
 async function contribute(account, potId, amount) {
   const salt = toHex(crypto.getRandomValues(new Uint8Array(32)));
   const nonce = keccak256(encodeAbiParameters([{ type: "uint256" }, { type: "bytes32" }], [potId, salt]));
-  const validBefore = BigInt(Math.floor(Date.now() / 1000) + 1800);
+  const validBefore = BigInt((await chainNow()) + 1800);
   const signature = await account.signTypedData({
     domain: { name: "Agora Dollar", version: "1", chainId, verifyingContract: d.ausd },
     types: {
