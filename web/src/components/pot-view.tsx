@@ -13,6 +13,7 @@ import { errorMessage, useNow } from "@/lib/hooks";
 import { phaseOf, type Phase } from "@/lib/kinpot";
 import { messageDomain, PAYEE_KINDS, shareClaimTypes, type PayeeKind } from "@/lib/messages";
 import { explorerUrl, networks, type NetworkKey } from "@/lib/networks";
+import { useNaira } from "@/lib/use-fx";
 import { usePot, type PotData } from "@/lib/use-pot";
 import { ActivityFeed } from "./activity";
 import { PhasePill } from "./phase";
@@ -54,6 +55,7 @@ function PotLoaded({ network, data, now }: { network: NetworkKey; data: PotData;
   const names = meta?.names ?? {};
   const nameOf = (a: Address) => names[a] ?? shortAddress(a);
   const left = pot.target - pot.raised;
+  const naira = useNaira();
 
   return (
     <div className="pt-8 sm:pt-12">
@@ -74,6 +76,7 @@ function PotLoaded({ network, data, now }: { network: NetworkKey; data: PotData;
                 <div className="num text-[32px] leading-none font-medium sm:text-[40px]">{formatUsd(pot.raised)}</div>
                 <div className="mt-2 text-sm text-muted">
                   of <span className="num text-ink">{formatUsd(pot.target)}</span>
+                  {naira(pot.target) && <span className="num text-faint"> ({naira(pot.target)})</span>}
                   {left > 0n && phase === "collecting" && <> · <span className="num">{formatUsd(left)}</span> to go</>}
                 </div>
               </div>

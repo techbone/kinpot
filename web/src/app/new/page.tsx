@@ -14,6 +14,7 @@ import { formatDate, formatUsd, parseUsd } from "@/lib/format";
 import { errorMessage } from "@/lib/hooks";
 import { PAYEE_KINDS, type PayeeKind } from "@/lib/messages";
 import { publicClient } from "@/lib/networks";
+import { useNaira } from "@/lib/use-fx";
 
 type Payee = { address: Address; name: string; kind: string; city: string; verified: boolean };
 type ShareRow = { name: string; amount: string };
@@ -50,6 +51,7 @@ export default function NewPotPage() {
   }, [account.name]);
 
   const target = parseUsd(amount);
+  const naira = useNaira();
   const shareAmounts = shares.map((s) => (s.amount.trim() ? parseUsd(s.amount) : null));
   const shareTotal = shareAmounts.reduce<bigint>((sum, a) => sum + (a ?? 0n), 0n);
   const sharesUsed = shares.some((s) => s.name.trim());
@@ -155,7 +157,14 @@ export default function NewPotPage() {
         </Card>
 
         <Card className="space-y-5 p-5 sm:p-6">
-          <Field label="Amount" hint="In US dollars (AUSD). Each sibling pays from wherever they are.">
+          <Field
+            label="Amount"
+            hint={
+              target !== null && naira(target)
+                ? `${naira(target)} at today's rate. Paid in US dollars (AUSD), from wherever each sibling is.`
+                : "In US dollars (AUSD). Each sibling pays from wherever they are."
+            }
+          >
             <div className="relative">
               <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted">$</span>
               <Input inputMode="decimal" className="num pl-7" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="480.00" />
