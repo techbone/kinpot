@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/hooks";
 import { passkeyErrorMessage } from "@/lib/passkey";
 import { useAccount } from "./providers";
-import { Button, Field, Input, Notice } from "./ui";
+import { Button, cx, Field, Input, Notice } from "./ui";
 
 export function SignInDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const account = useAccount();
@@ -105,14 +105,14 @@ export function SignInDialog({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 /** Renders children when signed in, otherwise a prompt that opens the sign-in dialog. */
-export function SignInGate({ children, prompt }: { children: React.ReactNode; prompt: string }) {
+export function SignInGate({ children, prompt, spaced = true }: { children: React.ReactNode; prompt: string; spaced?: boolean }) {
   const account = useAccount();
   const [open, setOpen] = useState(false);
   if (!account.mounted) return null;
   if (account.address) return <>{children}</>;
   return (
     <>
-      <Button size="lg" className="mt-4 w-full" onClick={() => setOpen(true)}>
+      <Button size="lg" className={cx("w-full", spaced && "mt-4")} onClick={() => setOpen(true)}>
         {prompt}
       </Button>
       <SignInDialog open={open} onClose={() => setOpen(false)} />

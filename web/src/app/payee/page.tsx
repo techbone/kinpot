@@ -28,9 +28,24 @@ export default function PayeePage() {
         {account.mounted && account.address ? (
           <PayeeHome />
         ) : (
-          <Card className="max-w-sm p-5">
-            <SignInGate prompt="Sign in to receive payments">{null}</SignInGate>
-          </Card>
+          <>
+            <ol className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-3">
+              {[
+                ["List your school, hospital or property", "Sign in with your phone's screen lock and add your name and city. Kinpot verifies you before families see the badge."],
+                ["Confirm each bill", "When a family starts a pot for you, check the student or patient and the amount. Confirm it, or decline if it isn't yours."],
+                ["Get paid on the due date", "Once the family has covered it, the full amount arrives in one payment, with the reference attached."],
+              ].map(([title, body], i) => (
+                <li key={title} className="bg-card p-5">
+                  <span className="num text-xs text-faint">0{i + 1}</span>
+                  <h3 className="mt-2 text-[15px] font-medium">{title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-6 max-w-xs">
+              <SignInGate prompt="Sign in to receive payments" spaced={false}>{null}</SignInGate>
+            </div>
+          </>
         )}
       </div>
     </div>

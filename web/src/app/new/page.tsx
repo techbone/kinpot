@@ -286,7 +286,7 @@ export default function NewPotPage() {
             )}
           </p>
           <div className="mt-5">
-            <SignInGate prompt="Sign in to start the pot">
+            <SignInGate prompt="Sign in to start the pot" spaced={false}>
               <Button size="lg" className="w-full" disabled={problems.length > 0 || busy !== null} onClick={() => void submit()}>
                 {busy ?? "Start the pot"}
               </Button>
