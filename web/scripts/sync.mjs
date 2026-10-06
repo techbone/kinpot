@@ -16,6 +16,8 @@ writeFileSync(
     "",
     `export const mockAusdAbi = ${JSON.stringify(abi("MockAUSD.sol/MockAUSD.json"), null, 2)} as const;`,
     "",
+    `export const automationAbi = ${JSON.stringify(abi("KinpotAutomation.sol/KinpotAutomation.json"), null, 2)} as const;`,
+    "",
   ].join("\n"),
 );
 
@@ -40,6 +42,7 @@ writeFileSync(
     "  ausd: Address;",
     "  forwarder: Address;",
     "  kinpot: Address;",
+    "  automation: Address;",
     "};",
     "",
     `export const deployments: Record<number, Deployment> = ${JSON.stringify(deployments, null, 2)};`,

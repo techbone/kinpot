@@ -86,3 +86,13 @@ export function explorerUrl(key: NetworkKey, kind: "tx" | "address", value: stri
   const base = networks[key].explorer;
   return base ? `${base}/${kind}/${value}` : undefined;
 }
+
+/** Database key for one deployment: a redeployed contract starts a fresh namespace of pot IDs. */
+export function scopeOf(key: NetworkKey): string | undefined {
+  const d = networks[key].deployment;
+  return d ? `${d.chainId}:${d.kinpot.toLowerCase()}` : undefined;
+}
+
+export function networkForScope(scope: string): NetworkKey | undefined {
+  return (Object.keys(networks) as NetworkKey[]).find((k) => scopeOf(k) === scope);
+}

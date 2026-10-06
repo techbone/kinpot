@@ -1,21 +1,8 @@
-import {
-  BaseError,
-  ContractFunctionRevertedError,
-  createWalletClient,
-  decodeFunctionData,
-  fallback,
-  http,
-  isAddress,
-  isHex,
-  parseEventLogs,
-  parseSignature,
-  type Address,
-  type Hex,
-} from "viem";
-import { privateKeyToAccount, nonceManager } from "viem/accounts";
+import { BaseError, ContractFunctionRevertedError, decodeFunctionData, isAddress, isHex, parseSignature, type Address, type Hex } from "viem";
 
 import { forwarderAbi, kinpotAbi, mockAusdAbi } from "@/lib/abi";
-import { isNetworkKey, networks, publicClient, type NetworkKey } from "@/lib/networks";
+import { isNetworkKey, networks, publicClient } from "@/lib/networks";
+import { submit } from "@/lib/relayer";
 
 export const runtime = "nodejs";
 
@@ -53,27 +40,6 @@ function rateLimited(key: string, max: number, windowMs: number): boolean {
   return recent.length > max;
 }
 
-const accounts = new Map<string, ReturnType<typeof privateKeyToAccount>>();
-function relayer() {
-  const key = process.env.RELAYER_PRIVATE_KEY as Hex | undefined;
-  if (!key) throw new Error("RELAYER_PRIVATE_KEY is not set.");
-  let account = accounts.get(key);
-  if (!account) {
-    account = privateKeyToAccount(key, { nonceManager });
-    accounts.set(key, account);
-  }
-  return account;
-}
-
-function walletClient(network: NetworkKey) {
-  const net = networks[network];
-  return createWalletClient({
-    account: relayer(),
-    chain: net.chain,
-    transport: fallback(net.rpc.map((url) => http(url))),
-  });
-}
-
 function fail(message: string, status = 400) {
   return Response.json({ error: message }, { status });
 }
@@ -89,21 +55,6 @@ function explain(error: unknown): string {
     return error.shortMessage;
   }
   return error instanceof Error ? error.message : "The request failed.";
-}
-
-type Call = { address: Address; abi: readonly unknown[]; functionName: string; args: readonly unknown[] };
-
-/** Simulate, size the gas limit tightly (Monad charges the declared limit), send, wait. */
-async function submit(network: NetworkKey, call: Call) {
-  const client = publicClient(network);
-  const account = relayer();
-  await client.simulateContract({ ...call, account } as never);
-  const estimate = await client.estimateContractGas({ ...call, account } as never);
-  const hash = await walletClient(network).writeContract({ ...call, gas: (estimate * 115n) / 100n } as never);
-  const receipt = await client.waitForTransactionReceipt({ hash, timeout: 30_000 });
-  if (receipt.status !== "success") throw new Error("The transaction reverted.");
-  const created = parseEventLogs({ abi: kinpotAbi, logs: receipt.logs, eventName: "PotCreated" })[0];
-  return { hash, potId: created ? created.args.potId.toString() : undefined };
 }
 
 export async function POST(req: Request) {

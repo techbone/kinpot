@@ -4,7 +4,7 @@ import { getAddress, isAddress, isHex, verifyTypedData, type Hex } from "viem";
 import { kinpotAbi } from "@/lib/abi";
 import { db, schema } from "@/lib/db";
 import { messageDomain, shareClaimTypes } from "@/lib/messages";
-import { isNetworkKey, networks, publicClient } from "@/lib/networks";
+import { isNetworkKey, networks, publicClient, scopeOf } from "@/lib/networks";
 
 export const runtime = "nodejs";
 
@@ -41,13 +41,13 @@ export async function POST(req: Request) {
   const [row] = await d
     .select()
     .from(schema.pots)
-    .where(and(eq(schema.pots.chainId, net.chain.id), eq(schema.pots.potId, String(potId))));
+    .where(and(eq(schema.pots.scope, scopeOf(net.key)!), eq(schema.pots.potId, String(potId))));
   if (!row || Number(shareIndex) >= row.bill.shares.length) {
     return Response.json({ error: "Unknown share." }, { status: 404 });
   }
   await d
     .insert(schema.shareClaims)
-    .values({ chainId: net.chain.id, potId: String(potId), shareIndex: Number(shareIndex), address: getAddress(address) })
+    .values({ scope: scopeOf(net.key)!, potId: String(potId), shareIndex: Number(shareIndex), address: getAddress(address) })
     .onConflictDoNothing();
   return Response.json({ ok: true });
 }

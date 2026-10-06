@@ -8,15 +8,17 @@ export type Deployment = {
   ausd: Address;
   forwarder: Address;
   kinpot: Address;
+  automation: Address;
 };
 
 export const deployments: Record<number, Deployment> = {
   "31337": {
-    "ausd": "0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f",
+    "ausd": "0xCAD3148b80Bb30CA978Caf025386F91944B89A62",
+    "automation": "0xA504877079011843e4e7e1822600A213d2c8E248",
     "chainId": 31337,
-    "forwarder": "0x08926B57c8fec6a935aE94BbfaED03266029A2fF",
-    "kinpot": "0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6",
+    "forwarder": "0xCEed289d641e311255097EE00E401fF6680ABf20",
+    "kinpot": "0xeDA39c2F26C1C705e7d2f37CCA3965306eB437cf",
     "mockAusd": true,
-    "startBlock": 0
+    "startBlock": 20
   }
 };

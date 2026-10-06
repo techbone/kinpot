@@ -5,7 +5,7 @@ import { kinpotAbi } from "@/lib/abi";
 import { billHash, isBill } from "@/lib/bill";
 import { db, schema } from "@/lib/db";
 import type { PotMeta } from "@/lib/messages";
-import { isNetworkKey, networks, publicClient } from "@/lib/networks";
+import { isNetworkKey, networkForScope, networks, publicClient, scopeOf } from "@/lib/networks";
 
 export const runtime = "nodejs";
 
@@ -36,18 +36,19 @@ export async function GET(req: Request) {
   if (bySlug) {
     const [row] = await d.select().from(schema.pots).where(eq(schema.pots.slug, bySlug));
     if (!row) return fail("Pot not found.", 404);
-    const key = Object.values(networks).find((n) => n.chain.id === row.chainId)?.key;
+    const key = networkForScope(row.scope);
     return Response.json({ network: key, potId: row.potId, meta: await metaFor(row) });
   }
 
   if (!isNetworkKey(network)) return fail("Unknown network.");
-  const chainId = networks[network].chain.id;
+  const scope = scopeOf(network);
+  if (!scope) return fail("Not deployed on this network.");
 
   if (potId) {
     const [row] = await d
       .select()
       .from(schema.pots)
-      .where(and(eq(schema.pots.chainId, chainId), eq(schema.pots.potId, potId)));
+      .where(and(eq(schema.pots.scope, scope), eq(schema.pots.potId, potId)));
     return Response.json({ meta: row ? await metaFor(row) : null });
   }
 
@@ -56,17 +57,17 @@ export async function GET(req: Request) {
     const rows = await d
       .select()
       .from(schema.pots)
-      .where(and(eq(schema.pots.chainId, chainId), or(eq(schema.pots.organizer, a), eq(schema.pots.payee, a))));
+      .where(and(eq(schema.pots.scope, scope), or(eq(schema.pots.organizer, a), eq(schema.pots.payee, a))));
     const claimed = await d
       .select()
       .from(schema.shareClaims)
-      .where(and(eq(schema.shareClaims.chainId, chainId), eq(schema.shareClaims.address, a)));
+      .where(and(eq(schema.shareClaims.scope, scope), eq(schema.shareClaims.address, a)));
     const extraIds = claimed.map((c) => c.potId).filter((id) => !rows.some((r) => r.potId === id));
     const extra = extraIds.length
       ? await d
           .select()
           .from(schema.pots)
-          .where(and(eq(schema.pots.chainId, chainId), inArray(schema.pots.potId, extraIds)))
+          .where(and(eq(schema.pots.scope, scope), inArray(schema.pots.potId, extraIds)))
       : [];
     return Response.json({
       pots: [...rows, ...extra].map((r) => ({
@@ -89,7 +90,7 @@ async function metaFor(row: typeof schema.pots.$inferSelect): Promise<PotMeta> {
   const claims = await d
     .select()
     .from(schema.shareClaims)
-    .where(and(eq(schema.shareClaims.chainId, row.chainId), eq(schema.shareClaims.potId, row.potId)));
+    .where(and(eq(schema.shareClaims.scope, row.scope), eq(schema.shareClaims.potId, row.potId)));
   const [payee] = await d.select().from(schema.payees).where(eq(schema.payees.address, row.payee));
   const addresses = [...new Set([row.organizer, row.payee, ...claims.map((c) => c.address)])];
   const profiles = await d.select().from(schema.profiles).where(inArray(schema.profiles.address, addresses));
@@ -125,11 +126,11 @@ export async function POST(req: Request) {
   const [existing] = await d
     .select()
     .from(schema.pots)
-    .where(and(eq(schema.pots.chainId, net.chain.id), eq(schema.pots.potId, body.potId)));
+    .where(and(eq(schema.pots.scope, scopeOf(net.key)!), eq(schema.pots.potId, body.potId)));
   if (existing) return Response.json({ slug: existing.slug });
 
   const row = {
-    chainId: net.chain.id,
+    scope: scopeOf(net.key)!,
     potId: body.potId,
     slug: slug(),
     bill: body.bill,

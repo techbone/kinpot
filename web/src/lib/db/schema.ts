@@ -6,7 +6,8 @@ import type { Bill } from "../bill";
 export const pots = pgTable(
   "pots",
   {
-    chainId: integer("chain_id").notNull(),
+    /** `${chainId}:${kinpotAddress}`, see scopeOf. */
+    scope: text("scope").notNull(),
     potId: text("pot_id").notNull(),
     slug: text("slug").notNull().unique(),
     bill: jsonb("bill").$type<Bill>().notNull(),
@@ -15,20 +16,20 @@ export const pots = pgTable(
     payee: text("payee").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.chainId, t.potId] })],
+  (t) => [primaryKey({ columns: [t.scope, t.potId] })],
 );
 
 /** Links a named share ("Kemi: $150") to the address that paid it. Signed by that address. */
 export const shareClaims = pgTable(
   "share_claims",
   {
-    chainId: integer("chain_id").notNull(),
+    scope: text("scope").notNull(),
     potId: text("pot_id").notNull(),
     shareIndex: integer("share_index").notNull(),
     address: text("address").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.chainId, t.potId, t.shareIndex] })],
+  (t) => [primaryKey({ columns: [t.scope, t.potId, t.shareIndex] })],
 );
 
 /** Schools, hospitals and landlords that can receive payments. `verified` is set by Kinpot. */
@@ -51,7 +52,7 @@ export const profiles = pgTable("profiles", {
 
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS pots (
-  chain_id integer NOT NULL,
+  scope text NOT NULL,
   pot_id text NOT NULL,
   slug text NOT NULL UNIQUE,
   bill jsonb NOT NULL,
@@ -59,17 +60,17 @@ CREATE TABLE IF NOT EXISTS pots (
   organizer text NOT NULL,
   payee text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (chain_id, pot_id)
+  PRIMARY KEY (scope, pot_id)
 );
 CREATE INDEX IF NOT EXISTS pots_organizer ON pots (organizer);
 CREATE INDEX IF NOT EXISTS pots_payee ON pots (payee);
 CREATE TABLE IF NOT EXISTS share_claims (
-  chain_id integer NOT NULL,
+  scope text NOT NULL,
   pot_id text NOT NULL,
   share_index integer NOT NULL,
   address text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (chain_id, pot_id, share_index)
+  PRIMARY KEY (scope, pot_id, share_index)
 );
 CREATE TABLE IF NOT EXISTS payees (
   id serial PRIMARY KEY,

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { PotView } from "@/components/pot-view";
 import { db, schema } from "@/lib/db";
-import { networks } from "@/lib/networks";
+import { networkForScope, networks } from "@/lib/networks";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +12,8 @@ async function lookup(slug: string) {
   const d = await db();
   const [row] = await d.select().from(schema.pots).where(eq(schema.pots.slug, slug));
   if (!row) return null;
-  const network = Object.values(networks).find((n) => n.chain.id === row.chainId);
-  return network ? { row, network } : null;
+  const key = networkForScope(row.scope);
+  return key ? { row, network: networks[key] } : null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
