@@ -6,6 +6,7 @@ import { erc20Abi } from "viem";
 
 import { faucet } from "@/lib/actions";
 import { formatUsd } from "@/lib/format";
+import { rampUrl } from "@/lib/onramp";
 import { errorMessage } from "@/lib/hooks";
 import { publicClient } from "@/lib/networks";
 import { useAccount, useNetwork } from "./providers";
@@ -70,7 +71,14 @@ export function WalletPanel() {
           {busy ? "Adding…" : "Add $500 of test money"}
         </Button>
       ) : (
-        <p className="mt-2 text-xs leading-relaxed text-muted">Send AUSD on Monad to your address above to add money.</p>
+        <>
+          <a href={rampUrl(address!)} target="_blank" rel="noreferrer" className="mt-3 block">
+            <Button size="sm" variant="secondary" className="w-full">
+              Add money with a card or bank
+            </Button>
+          </a>
+          <p className="mt-2 text-xs leading-relaxed text-muted">Or send AUSD on Monad to your address above.</p>
+        </>
       )}
       {message && <p className="mt-2 text-xs text-muted">{message}</p>}
     </div>

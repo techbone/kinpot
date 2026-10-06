@@ -13,6 +13,7 @@ import { errorMessage, useNow } from "@/lib/hooks";
 import { phaseOf, type Phase } from "@/lib/kinpot";
 import { messageDomain, PAYEE_KINDS, shareClaimTypes, type PayeeKind } from "@/lib/messages";
 import { explorerUrl, networks, type NetworkKey } from "@/lib/networks";
+import { rampUrl } from "@/lib/onramp";
 import { useNaira } from "@/lib/use-fx";
 import { usePot, type PotData } from "@/lib/use-pot";
 import { ActivityFeed } from "./activity";
@@ -607,6 +608,16 @@ function PayShare({ network, data }: { network: NetworkKey; data: PotData }) {
           <div className="mt-3">
             <Notice tone="warn">
               You need {formatUsd(amount! - balance.data!)} more.{" "}
+              {!mock && (
+                <a
+                  className="font-medium underline underline-offset-2"
+                  href={rampUrl(account.address!, Number(amount! - balance.data!) / 1e6)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Add it with a card or bank
+                </a>
+              )}
               {mock && (
                 <button
                   type="button"
@@ -633,7 +644,7 @@ function PayShare({ network, data }: { network: NetworkKey; data: PotData }) {
         <Button size="lg" className="mt-4 w-full" disabled={busy !== null || amount === null || tooMuch || short} onClick={() => void pay()}>
           {busy === "pay" ? "Paying…" : amount !== null ? `Pay ${formatUsd(amount)}` : "Pay"}
         </Button>
-        <p className="mt-2 text-center text-[11px] text-faint">One tap to approve. No fees on testnet.</p>
+        <p className="mt-2 text-center text-[11px] text-faint">One tap to approve. Kinpot covers the network fee.</p>
         {error && <div className="mt-3"><Notice tone="danger">{error}</Notice></div>}
         {paid && (
           <div className="mt-3">
