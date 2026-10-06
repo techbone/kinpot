@@ -1,0 +1,15 @@
+testnet:
+  user-workflow:
+    workflow-name: "kinpot-keeper-testnet"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.testnet.json"
+    secrets-path: ""
+
+mainnet:
+  user-workflow:
+    workflow-name: "kinpot-keeper-mainnet"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.mainnet.json"
+    secrets-path: ""

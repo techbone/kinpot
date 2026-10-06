@@ -22,3 +22,6 @@ contracts/broadcast/
 .data/
 *.tsbuildinfo
 next-env.d.ts
+automation/.env
+automation/kinpot-keeper/node_modules/
+automation/kinpot-keeper/dist/

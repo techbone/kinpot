@@ -1,0 +1,10 @@
+# Chainlink CRE project for Kinpot. The workflow lives in ./kinpot-keeper.
+testnet:
+  rpcs:
+    - chain-name: monad-testnet
+      url: https://testnet-rpc.monad.xyz
+
+mainnet:
+  rpcs:
+    - chain-name: monad-mainnet
+      url: https://rpc.monad.xyz
