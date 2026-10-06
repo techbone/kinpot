@@ -15,3 +15,7 @@ contracts/broadcast/**/dry-run/
 # envio
 indexer/generated/
 indexer/build/
+
+.secrets/
+contracts/deployments/31337.json
+contracts/broadcast/
