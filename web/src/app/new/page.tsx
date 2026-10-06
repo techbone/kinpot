@@ -13,6 +13,7 @@ import { billHash, CATEGORIES, type Bill, type Category } from "@/lib/bill";
 import { formatDate, formatUsd, parseUsd } from "@/lib/format";
 import { errorMessage } from "@/lib/hooks";
 import { PAYEE_KINDS, type PayeeKind } from "@/lib/messages";
+import { publicClient } from "@/lib/networks";
 
 type Payee = { address: Address; name: string; kind: string; city: string; verified: boolean };
 type ShareRow = { name: string; amount: string };
@@ -54,14 +55,15 @@ export default function NewPotPage() {
   const sharesUsed = shares.some((s) => s.name.trim());
   const sharesOk = !sharesUsed || (target !== null && shareTotal === target && shares.every((s, i) => s.name.trim() && shareAmounts[i] !== null));
 
-  const schedule = useMemo(() => {
-    const now = Math.floor(Date.now() / 1000);
+  const scheduleAt = (now: number) => {
     if (timing === "demo") return { dueAt: now + 180, expiresAt: now + 15 * 60 };
     if (timing === "asap") return { dueAt: now + 120, expiresAt: now + 120 + graceDays * DAY };
     const [y, m, d] = dueDate.split("-").map(Number);
     const due = Math.max(Math.floor(new Date(y, m - 1, d, 9).getTime() / 1000), now + 120);
     return { dueAt: due, expiresAt: due + graceDays * DAY };
-  }, [timing, dueDate, graceDays]);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const schedule = useMemo(() => scheduleAt(Math.floor(Date.now() / 1000)), [timing, dueDate, graceDays]);
 
   const problems = [
     !title.trim() && "Give the bill a name.",
@@ -93,12 +95,14 @@ export default function NewPotPage() {
     };
     try {
       setBusy("Waiting for your approval…");
+      // Final times come from the chain clock; a phone's clock can be minutes off.
+      const final = scheduleAt(Number((await publicClient(network.key).getBlock()).timestamp));
       const signer = { address: account.address, signTypedData: account.signTypedData };
       const result = await createPot(network.key, signer, {
         payee: payee.address,
         target,
-        dueAt: schedule.dueAt,
-        expiresAt: schedule.expiresAt,
+        dueAt: final.dueAt,
+        expiresAt: final.expiresAt,
         billHash: billHash(bill),
       });
       if (!result.potId) throw new Error("The pot was created but we couldn't read its number. Check your pots list.");
