@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* Warm paper and ink neutrals, one accent: adire indigo. Dark mode is its own palette, not an inversion. */
+:root {
+  --paper: #f5f3ee;
+  --card: #ffffff;
+  --sunk: #efece5;
+  --ink: #15171c;
+  --muted: #6a6e76;
+  --faint: #9a9da3;
+  --line: #e3dfd5;
+  --line-strong: #cfcabd;
+  --accent: #26348a;
+  --accent-hover: #1d2a75;
+  --accent-soft: #e7e9f5;
+  --on-accent: #ffffff;
+  --ok: #1d7448;
+  --ok-soft: #e3f1e8;
+  --warn: #9a5f0c;
+  --warn-soft: #f7ecd9;
+  --danger: #b1362a;
+  --danger-soft: #f8e3df;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0e1014;
+    --card: #15181d;
+    --sunk: #1b1f25;
+    --ink: #eceef1;
+    --muted: #9ba0a8;
+    --faint: #6d727a;
+    --line: #252a31;
+    --line-strong: #353b44;
+    --accent: #9aa6f2;
+    --accent-hover: #b3bcf6;
+    --accent-soft: #1e2440;
+    --on-accent: #0e1014;
+    --ok: #5cc28c;
+    --ok-soft: #14271d;
+    --warn: #e0a54a;
+    --warn-soft: #2a2114;
+    --danger: #ec7b6d;
+    --danger-soft: #2c1714;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-display: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+}
+@media (prefers-color-scheme: dark) {
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}

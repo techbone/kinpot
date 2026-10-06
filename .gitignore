@@ -19,3 +19,6 @@ indexer/build/
 .secrets/
 contracts/deployments/31337.json
 contracts/broadcast/
+.data/
+*.tsbuildinfo
+next-env.d.ts
