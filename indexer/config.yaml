@@ -18,7 +18,7 @@ contracts:
       - event: "RefundFailed(uint256 indexed potId, address indexed contributor, uint256 amount)"
 chains:
   - id: 10143 # Monad testnet
-    start_block: 0
+    start_block: 69217139
     contracts:
       - name: Kinpot
-        address: "0x0000000000000000000000000000000000000000"
+        address: "0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6"

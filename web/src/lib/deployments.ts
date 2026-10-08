@@ -12,6 +12,15 @@ export type Deployment = {
 };
 
 export const deployments: Record<number, Deployment> = {
+  "10143": {
+    "ausd": "0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f",
+    "automation": "0xCAD3148b80Bb30CA978Caf025386F91944B89A62",
+    "chainId": 10143,
+    "forwarder": "0x08926B57c8fec6a935aE94BbfaED03266029A2fF",
+    "kinpot": "0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6",
+    "mockAusd": true,
+    "startBlock": 69217139
+  },
   "31337": {
     "ausd": "0xCAD3148b80Bb30CA978Caf025386F91944B89A62",
     "automation": "0xA504877079011843e4e7e1822600A213d2c8E248",

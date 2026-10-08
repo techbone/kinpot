@@ -80,7 +80,7 @@ flowchart LR
 | Neon Postgres | Context only | Profiles, payee directory, bill details, sibling shares, relay log. |
 | Envio HyperIndex | Read model | Indexes `Kinpot` events into pot lists, the payee inbox and the activity feed (GraphQL). |
 | Chainlink CRE workflow | Untrusted trigger | Every minute it reads `KinpotAutomation.pending()` and, if anything is due or expired, sends a signed report of pot IDs to `KinpotAutomation`. |
-| Fallback keeper (`/api/keeper`) | Untrusted trigger | Called every 5 minutes by a GitHub Actions schedule. Reads the same `pending()` and calls `release` / `refund` through the relayer. |
+| Fallback keeper (`/api/keeper`) | Untrusted trigger | A secret-protected endpoint that reads the same `pending()` and calls `release` / `refund` through the relayer. Any external scheduler can call it; the pot page's "Pay now" and "Send refunds" buttons do the same for one pot. |
 
 ## 4. Contracts
 
@@ -287,7 +287,7 @@ Next.js 16 (App Router), React 19, wagmi 3, viem 2, TanStack Query and Tailwind 
 | Accounts | Mera (`@category-labs/mera`) plus injected wallets | Passkey EOAs built for Monad, with no bundler or MPC. They target the Mera UX and Mera Passkeys bounties. Injected wallets are the fallback where WebAuthn PRF isn't available. |
 | Database | Neon Postgres + Drizzle | Free tier, serverless driver that works on Vercel, typed schema. |
 | Indexer | Envio HyperIndex | Supports Monad (HyperSync on 143 and 10143), has free hosting, and targets the Envio bounty. |
-| Automation | Chainlink CRE (cron → EVM read → signed report → EVM write), with a GitHub Actions fallback | CRE supports Monad and targets the CRE bounty. Vercel's Hobby plan only allows daily crons, so the fallback runs from GitHub's scheduler. Because release and refund are permissionless, the fallback needs no extra trust. |
+| Automation | Chainlink CRE (cron → EVM read → signed report → EVM write), with a manual fallback | CRE supports Monad and targets the CRE bounty. Because release and refund are permissionless, the fallback needs no extra trust. |
 | Hosting | Vercel | Preview deploys and cron. |
 | On-ramp | Ramp Network hosted widget | Ramp sells `MONAD_AUSD` (the same contract we use) by card and bank in the UK, US and most countries outside the EU. Checked against Ramp's asset API. |
 
@@ -320,7 +320,7 @@ Deliberately not used: Privy and Dynamic. One account system is enough, and Mera
 | 2026-10-06 | **Database moved into M1.** | Pot titles, sibling names and the payee directory are needed from the first screen. Local dev uses embedded Postgres (PGlite); production uses Neon. Same schema. |
 | 2026-10-06 | **No SIWE session; every write is a signed EIP-712 message.** | Each off-chain write (profile, share claim, payee registration) carries its own signature, and pot details are checked against the onchain hash. That removes session state without weakening anything. |
 | 2026-10-06 | **Deadlines and due dates use chain time.** | Phone clocks can be minutes off. Signatures and schedules are computed from the latest block's timestamp. |
-| 2026-10-06 | **Fallback keeper on GitHub Actions, not Vercel Cron.** | The Vercel Hobby plan limits crons to once a day. |
+| 2026-10-08 | **No scheduled fallback keeper.** | Vercel Hobby limits crons to daily and a GitHub Actions schedule adds noise to the repo. CRE is the keeper; `/api/keeper` and the in-app buttons cover it if CRE is down. |
 
 ## 12. Out of scope (hackathon)
 
@@ -367,7 +367,7 @@ Today is Mon 6 Oct. The deadline is Mon 13 Oct.
 | M1 | Tue 7 Oct | **Thinnest slice.** `Kinpot` + forwarder + `MockAUSD` (with EIP-3009); unit tests; fork test against mainnet AUSD; local deploy; web app; end-to-end script. | ✅ Done 6 Oct, locally. Testnet deploy waits on faucet MON. |
 | M2 | Wed 8 Oct | **Passkeys and gasless.** Mera passkey accounts, `/api/relay` (forwarder + EIP-3009), rate limits, testnet faucet. | ✅ Done 6 Oct. |
 | M3 | Thu 9 – Fri 10 Oct | **The product.** Database, payee directory, bill hash check, sibling shares, `/new`, `/p/[slug]`, `/payee`, dashboard, WhatsApp share, naira estimate, design pass. | ✅ Done 6 Oct. Design pass continues. |
-| M4 | Sat 11 Oct | **Indexer and automation.** Envio indexer and activity feed; `KinpotAutomation` + CRE workflow (compiles to wasm); GitHub Actions fallback keeper. | ✅ Built 6 Oct. Live runs wait on the testnet deploy. |
+| M4 | Sat 11 Oct | **Indexer and automation.** Envio indexer and activity feed; `KinpotAutomation` + CRE workflow (compiles to wasm); fallback `/api/keeper`. | ✅ Built 6 Oct. Live runs wait on the testnet deploy. |
 | M5 | Sun 12 Oct | **Mainnet and hardening.** Invariant suite (I1–I7), 98.6% line coverage, clean `forge lint`, Ramp on-ramp, then mainnet deploy with real AUSD. | Invariants, coverage, lint and on-ramp done. Deploys pending. |
 | M6 | Mon 13 Oct | **Submission.** README, `.env.example`, demo script and video, write-up, submit. | Not started. |
 | Stretch | n/a | Opt-in float yield via earnAUSD (§11). | Not started. |
