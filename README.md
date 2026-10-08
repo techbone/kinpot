@@ -6,7 +6,7 @@ Siblings abroad pool money for a family bill back home: Mummy's hospital bill, t
 
 Family and payees sign in with Face ID. There's no seed phrase, no gas token, and the main flow never mentions a blockchain.
 
-**Live app:** _pending deploy_ · [Architecture](ARCHITECTURE.md)
+**Live app:** [kinpot.vercel.app](https://kinpot.vercel.app) (testnet: free test money in the account menu) · [Architecture](ARCHITECTURE.md)
 
 Built for **Monad Metropolis** (Consumer Products & Payments) on **Monad**, with **AUSD**.
 
@@ -60,7 +60,7 @@ stateDiagram-v2
 | `ERC2771Forwarder` | [`0x08926B57c8fec6a935aE94BbfaED03266029A2fF`](https://testnet.monadexplorer.com/address/0x08926B57c8fec6a935aE94BbfaED03266029A2fF) |
 | Test AUSD | [`0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f`](https://testnet.monadexplorer.com/address/0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f) |
 
-The first testnet pot ran the whole lifecycle through the relayer: [created](https://testnet.monadexplorer.com/tx/0xd76754b7ce670f32e6f4639e6d6af58ab54a750b1beb16f9de73782ffcd1c3ed), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0xb7c185fe1b5213369f06e36f968cba538ed649b4ae3622c6a241a8dab92df4c9), [paid out](https://testnet.monadexplorer.com/tx/0x23c26eccfbbec3cc1969bcd30a33e9fed77b488dcd4aafe779926fb83231efa2). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
+A testnet pot ran the whole lifecycle through the relayer ([see it live](https://kinpot.vercel.app/p/evk83ftz)): [created](https://testnet.monadexplorer.com/tx/0xd76754b7ce670f32e6f4639e6d6af58ab54a750b1beb16f9de73782ffcd1c3ed), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0xb7c185fe1b5213369f06e36f968cba538ed649b4ae3622c6a241a8dab92df4c9), [paid out](https://testnet.monadexplorer.com/tx/0x23c26eccfbbec3cc1969bcd30a33e9fed77b488dcd4aafe779926fb83231efa2). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
 
 **Monad mainnet (143):** _pending_, using the real AUSD at `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`.
 
