@@ -60,7 +60,7 @@ stateDiagram-v2
 | `ERC2771Forwarder` | [`0x08926B57c8fec6a935aE94BbfaED03266029A2fF`](https://testnet.monadexplorer.com/address/0x08926B57c8fec6a935aE94BbfaED03266029A2fF) |
 | Test AUSD | [`0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f`](https://testnet.monadexplorer.com/address/0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f) |
 
-A testnet pot ran the whole lifecycle through the relayer ([see it live](https://kinpot.vercel.app/p/evk83ftz)): [created](https://testnet.monadexplorer.com/tx/0xd76754b7ce670f32e6f4639e6d6af58ab54a750b1beb16f9de73782ffcd1c3ed), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0xb7c185fe1b5213369f06e36f968cba538ed649b4ae3622c6a241a8dab92df4c9), [paid out](https://testnet.monadexplorer.com/tx/0x23c26eccfbbec3cc1969bcd30a33e9fed77b488dcd4aafe779926fb83231efa2). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
+A testnet pot ran the whole lifecycle through the relayer ([see it live](https://kinpot.vercel.app/p/evk83ftz)): [created](https://testnet.monadexplorer.com/tx/0xbce8d05bb12d39bfb183059a409fe5664dacf84090de3f32ed70edfca9b3564d), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0x3f9c7747e467d441562fdf28b3a4b553452fbcf697a5990da5c5a932242bd141), [paid out](https://testnet.monadexplorer.com/tx/0x0f7f8d896d06c3eb43b315e8e19c353d4fb03726dc1a13eccfa9a12973b83617). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
 
 **Monad mainnet (143):** _pending_, using the real AUSD at `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`.
 
