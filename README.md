@@ -49,6 +49,21 @@ stateDiagram-v2
 | Automatic refund | **Yes, by contract** | Operator process | No | No |
 | Sign-in | **Passkey, no gas** | Bank account | Wallet | Bank account |
 
+## Deployments
+
+**Monad testnet (10143)**, verified on Sourcify. Test AUSD here is a mock anyone can mint from the in-app faucet.
+
+| Contract | Address |
+|---|---|
+| `Kinpot` | [`0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6`](https://testnet.monadexplorer.com/address/0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6) |
+| `KinpotAutomation` (Chainlink CRE receiver) | [`0xCAD3148b80Bb30CA978Caf025386F91944B89A62`](https://testnet.monadexplorer.com/address/0xCAD3148b80Bb30CA978Caf025386F91944B89A62) |
+| `ERC2771Forwarder` | [`0x08926B57c8fec6a935aE94BbfaED03266029A2fF`](https://testnet.monadexplorer.com/address/0x08926B57c8fec6a935aE94BbfaED03266029A2fF) |
+| Test AUSD | [`0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f`](https://testnet.monadexplorer.com/address/0xa1e4BaB1Ca77271a50C3012f861679576bF95D6f) |
+
+The first testnet pot ran the whole lifecycle through the relayer: [created](https://testnet.monadexplorer.com/tx/0xd76754b7ce670f32e6f4639e6d6af58ab54a750b1beb16f9de73782ffcd1c3ed), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0xb7c185fe1b5213369f06e36f968cba538ed649b4ae3622c6a241a8dab92df4c9), [paid out](https://testnet.monadexplorer.com/tx/0x23c26eccfbbec3cc1969bcd30a33e9fed77b488dcd4aafe779926fb83231efa2). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
+
+**Monad mainnet (143):** _pending_, using the real AUSD at `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`.
+
 ## Proof it works
 
 - **Contracts:** 33 unit and fuzz tests, 7 automation tests, and an invariant suite (I1–I7) over 16k random calls each. Fork tests run the gasless lifecycle against **real AUSD on Monad mainnet**. 100% line coverage on `Kinpot.sol`, 98.6% overall, and `forge lint` is clean.
