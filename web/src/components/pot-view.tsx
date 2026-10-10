@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, CalendarClock, Check, CircleDashed, ExternalLink, HandCoins, Link2, ShieldCheck, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -8,6 +8,7 @@ import type { Address, TypedDataDefinition } from "viem";
 
 import { cancelPot, claimRefund, confirmBill, contribute, declineBill, faucet, triggerRefund, triggerRelease } from "@/lib/actions";
 import { CATEGORIES } from "@/lib/bill";
+import { fetchActivity, hasIndexer } from "@/lib/indexer";
 import { formatDate, formatDateTime, formatDue, formatUsd, parseUsd, relativeTime, shortAddress } from "@/lib/format";
 import { errorMessage, useNow } from "@/lib/hooks";
 import { phaseOf, type Phase } from "@/lib/kinpot";
@@ -86,7 +87,7 @@ function PotLoaded({ network, data, now }: { network: NetworkKey; data: PotData;
             <div className="mt-5">
               <Progress value={pot.raised} max={pot.target} tone={phase === "paid" ? "ok" : "accent"} />
             </div>
-            <Checklist data={data} now={now} payeeName={payeeName} />
+            <Checklist data={data} now={now} payeeName={payeeName} network={network} />
           </Card>
         </div>
 
@@ -128,7 +129,7 @@ function PayeeLine({ data, payeeName, network }: { data: PotData; payeeName: str
 }
 
 /** The three conditions the contract checks before it pays, shown as they are right now. */
-function Checklist({ data, now, payeeName }: { data: PotData; now: number; payeeName: string }) {
+function Checklist({ data, now, payeeName, network }: { data: PotData; now: number; payeeName: string; network: NetworkKey }) {
   const pot = data.pot!;
   const funded = pot.raised === pot.target;
   const due = now >= pot.dueAt;
@@ -140,6 +141,7 @@ function Checklist({ data, now, payeeName }: { data: PotData; now: number; payee
         <Check className="mt-0.5 size-4 shrink-0" />
         <span>
           <span className="num">{formatUsd(pot.target)}</span> went straight to {payeeName}. Nobody in between touched it.
+          <PaidReceipt network={network} potId={pot.id} />
         </span>
       </div>
     );
@@ -193,6 +195,27 @@ function Checklist({ data, now, payeeName }: { data: PotData; now: number; payee
         When all three are ticked, the money goes to the payee. If the pot isn't paid by {formatDue(pot.expiresAt, now)}, everyone is refunded.
       </li>
     </ul>
+  );
+}
+
+/** The payout transaction, from the indexer's activity feed (shares the feed's cached query). */
+function PaidReceipt({ network, potId }: { network: NetworkKey; potId: bigint }) {
+  const activity = useQuery({
+    queryKey: ["activity", network, potId.toString()],
+    enabled: hasIndexer(network),
+    queryFn: () => fetchActivity(network, potId),
+  });
+  const paid = activity.data?.find((a) => a.kind === "paid");
+  const href = paid ? explorerUrl(network, "tx", paid.txHash) : undefined;
+  if (!paid || !href) return null;
+  return (
+    <>
+      {" "}
+      <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium underline underline-offset-2">
+        View receipt <ExternalLink className="size-3" />
+      </a>
+      <span className="block pt-1 text-xs opacity-80">Paid {formatDateTime(Number(paid.timestamp))}</span>
+    </>
   );
 }
 
