@@ -175,6 +175,12 @@ if (network === "local") {
   }
 }
 
+// STOP_AFTER=due leaves a pot that is covered, confirmed and due, for the Chainlink CRE workflow to pay.
+if (process.env.STOP_AFTER === "due") {
+  console.log(`\nPot #${potId} is ready to pay. Pot: ${base}/p/${slug}`);
+  process.exit(0);
+}
+
 step("Anyone triggers the payment");
 const before = await balance(bursary.address);
 console.log("  ", (await api("/api/relay", { network, action: "release", potId })).hash);

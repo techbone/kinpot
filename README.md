@@ -62,6 +62,10 @@ stateDiagram-v2
 
 A testnet pot ran the whole lifecycle through the relayer ([see it live](https://kinpot.vercel.app/p/evk83ftz)): [created](https://testnet.monadexplorer.com/tx/0xbce8d05bb12d39bfb183059a409fe5664dacf84090de3f32ed70edfca9b3564d), three gasless contributions, [confirmed by the payee](https://testnet.monadexplorer.com/tx/0x3f9c7747e467d441562fdf28b3a4b553452fbcf697a5990da5c5a932242bd141), [paid out](https://testnet.monadexplorer.com/tx/0x0f7f8d896d06c3eb43b315e8e19c353d4fb03726dc1a13eccfa9a12973b83617). The relayer spent about 0.14 MON for the whole family's flow, faucet included.
 
+**Chainlink CRE paid a pot by itself.** The `kinpot-keeper` workflow (cron → read `pending()` → signed report) found pot #4 covered, confirmed and due, and paid it through the Chainlink forwarder: [report transaction](https://testnet.monadexplorer.com/tx/0x9f20f49a95eb28c1330c089ab4aeb7558b2312f148c7c7fb03f1e068fa62aebc) (`cre workflow simulate --broadcast`).
+
+**Envio indexer:** [`indexer.dev.hyperindex.xyz/d5578e2/v1/graphql`](https://indexer.dev.hyperindex.xyz/d5578e2/v1/graphql) powers the activity feed and payout receipts.
+
 **Monad mainnet (143):** _pending_, using the real AUSD at `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`.
 
 ## Proof it works
