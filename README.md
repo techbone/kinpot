@@ -66,7 +66,14 @@ A testnet pot ran the whole lifecycle through the relayer ([see it live](https:/
 
 **Envio indexer:** [`indexer.dev.hyperindex.xyz/d5578e2/v1/graphql`](https://indexer.dev.hyperindex.xyz/d5578e2/v1/graphql) powers the activity feed and payout receipts.
 
-**Monad mainnet (143):** _pending_, using the real AUSD at `0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`.
+**Monad mainnet (143)**, with the real AUSD, verified on Sourcify:
+
+| Contract | Address |
+|---|---|
+| `Kinpot` | [`0x335793390Bce6c2f74d45bFB8b78C6691aAf55c3`](https://monadscan.com/address/0x335793390Bce6c2f74d45bFB8b78C6691aAf55c3) |
+| `KinpotAutomation` (Chainlink CRE receiver) | [`0x5F7635E6ddae593D7D6a19359C9528918CA9604d`](https://monadscan.com/address/0x5F7635E6ddae593D7D6a19359C9528918CA9604d) |
+| `ERC2771Forwarder` | [`0x024f9a8F473f293f689E4186Fe8BdD517e2fF633`](https://monadscan.com/address/0x024f9a8F473f293f689E4186Fe8BdD517e2fF633) |
+| AUSD (Agora) | [`0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`](https://monadscan.com/address/0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a) |
 
 ## Proof it works
 
