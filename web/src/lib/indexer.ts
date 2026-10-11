@@ -2,10 +2,11 @@ import type { Address } from "viem";
 
 import { networks, type NetworkKey } from "./networks";
 
-/** Envio GraphQL endpoint per network. Without one, the app reads the chain directly and skips the feed. */
+/** Envio GraphQL endpoint. One indexer serves both chains (entities are keyed `${chainId}-${potId}`).
+ *  Without one, the app reads the chain directly and skips the feed. */
 const ENDPOINTS: Partial<Record<NetworkKey, string | undefined>> = {
-  testnet: process.env.NEXT_PUBLIC_ENVIO_TESTNET,
-  mainnet: process.env.NEXT_PUBLIC_ENVIO_MAINNET,
+  testnet: process.env.NEXT_PUBLIC_ENVIO_TESTNET ?? process.env.NEXT_PUBLIC_ENVIO_URL,
+  mainnet: process.env.NEXT_PUBLIC_ENVIO_MAINNET ?? process.env.NEXT_PUBLIC_ENVIO_URL,
 };
 
 export function hasIndexer(network: NetworkKey): boolean {

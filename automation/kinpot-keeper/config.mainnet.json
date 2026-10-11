@@ -2,8 +2,8 @@
   "schedule": "0 * * * * *",
   "chainSelectorName": "monad-mainnet",
   "isTestnet": false,
-  "kinpot": "0x0000000000000000000000000000000000000000",
-  "automation": "0x0000000000000000000000000000000000000000",
+  "kinpot": "0x335793390Bce6c2f74d45bFB8b78C6691aAf55c3",
+  "automation": "0x5F7635E6ddae593D7D6a19359C9528918CA9604d",
   "scan": 500,
   "gasLimit": "2000000"
 }

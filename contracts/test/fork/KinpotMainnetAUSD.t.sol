@@ -9,7 +9,7 @@ import {KinpotBase} from "../utils/KinpotBase.sol";
 contract KinpotMainnetAUSDTest is KinpotBase {
     IERC20 internal constant AUSD = IERC20(0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a);
     /// AUSD's balance storage isn't a plain mapping, so `deal` can't write it. Borrow from a holder.
-    address internal constant HOLDER = 0x36eDbF0C834591BFdfCaC0Ef9605528c75c406aA;
+    address internal constant HOLDER = 0xD5b70d70CBE6C42bCD1aaa662A21673A83f4615b;
 
     function setUp() public {
         vm.createSelectFork("monad");

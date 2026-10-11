@@ -22,3 +22,8 @@ chains:
     contracts:
       - name: Kinpot
         address: "0x0C9131bebCc64148efB2A68cE8ce86Ec0d0eB8B6"
+  - id: 143 # Monad mainnet
+    start_block: 112487874
+    contracts:
+      - name: Kinpot
+        address: "0x335793390Bce6c2f74d45bFB8b78C6691aAf55c3"
