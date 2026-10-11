@@ -7,9 +7,12 @@ import { kinpotAbi } from "./abi";
 import { networks, publicClient, type NetworkKey } from "./networks";
 
 const accounts = new Map<string, ReturnType<typeof privateKeyToAccount>>();
-function relayer() {
-  const key = process.env.RELAYER_PRIVATE_KEY as Hex | undefined;
-  if (!key) throw new Error("RELAYER_PRIVATE_KEY is not set.");
+
+/** Mainnet has its own relayer wallet, so a testnet key never holds real funds. */
+function relayer(network: NetworkKey) {
+  const name = network === "mainnet" ? "RELAYER_PRIVATE_KEY_MAINNET" : "RELAYER_PRIVATE_KEY";
+  const key = process.env[name] as Hex | undefined;
+  if (!key) throw new Error(`${name} is not set.`);
   let account = accounts.get(key);
   if (!account) {
     account = privateKeyToAccount(key, { nonceManager });
@@ -21,7 +24,7 @@ function relayer() {
 function walletClient(network: NetworkKey) {
   const net = networks[network];
   return createWalletClient({
-    account: relayer(),
+    account: relayer(network),
     chain: net.chain,
     transport: fallback(net.rpc.map((url) => http(url))),
   });
@@ -32,7 +35,7 @@ export type Call = { address: Address; abi: readonly unknown[]; functionName: st
 /** Simulate, size the gas limit tightly (Monad charges the declared limit), send, wait. */
 export async function submit(network: NetworkKey, call: Call) {
   const client = publicClient(network);
-  const account = relayer();
+  const account = relayer(network);
   await client.simulateContract({ ...call, account } as never);
   const estimate = await client.estimateContractGas({ ...call, account } as never);
   const hash = await walletClient(network).writeContract({ ...call, gas: (estimate * 115n) / 100n } as never);
