@@ -7,23 +7,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { shortAddress } from "@/lib/format";
 import { visibleNetworks } from "@/lib/networks";
+import { Logo } from "./logo";
 import { useAccount, useNetwork } from "./providers";
 import { SignInDialog } from "./sign-in";
 import { Button, CopyButton, cx } from "./ui";
 import { WalletPanel } from "./wallet-panel";
-
-export function Logo() {
-  return (
-    <Link href="/" className="flex items-center gap-2" aria-label="Kinpot home">
-      <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
-        <rect x="2" y="2" width="20" height="20" rx="6" className="fill-accent" />
-        <path d="M7 10.5h10M8 10.5v4.2a2.3 2.3 0 0 0 2.3 2.3h3.4a2.3 2.3 0 0 0 2.3-2.3v-4.2" className="stroke-on-accent" strokeWidth="1.7" fill="none" strokeLinecap="round" />
-        <path d="M12 6.8v1.6" className="stroke-on-accent" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-      <span className="font-display text-[17px] font-semibold tracking-tight">kinpot</span>
-    </Link>
-  );
-}
 
 function NetworkSwitch() {
   const { network, setNetwork } = useNetwork();

@@ -30,3 +30,6 @@ indexer/.envio/
 # Chainlink CRE build leftovers
 automation/kinpot-keeper/.cre_build_tmp.js
 automation/kinpot-keeper/dist/
+
+# Recording notes and submission text: prep material, not product docs.
+docs/
