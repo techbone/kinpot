@@ -114,7 +114,9 @@ const canonical = JSON.stringify(bill);
 const now = Number((await client.getBlock()).timestamp);
 
 step("Tobi starts a $4.80 pot (signature only, relayer pays gas)");
-const created = await forward(tobi, "createPot", [bursary.address, 4_800_000n, now + 120, now + 3600, keccak256(stringToBytes(canonical))]);
+// EXPIRES_IN (seconds) shortens the refund window, e.g. to watch the keeper refund an expired pot.
+const expiresIn = Math.max(Number(process.env.EXPIRES_IN ?? 3600), 180);
+const created = await forward(tobi, "createPot", [bursary.address, 4_800_000n, now + 120, now + expiresIn, keccak256(stringToBytes(canonical))]);
 const potId = BigInt(created.potId);
 console.log(`  pot #${potId}  tx ${created.hash}`);
 const { slug } = await api("/api/pots", { network, potId: potId.toString(), bill });
