@@ -45,17 +45,15 @@ export default function NewPotPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (account.name && shares.length === 0) setShares([{ name: account.name, amount: "" }]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account.name]);
 
   const target = parseUsd(amount);
   const naira = useNaira();
-  const shareAmounts = shares.map((s) => (s.amount.trim() ? parseUsd(s.amount) : null));
+  // Rows left completely blank are ignored, so "Who's chipping in?" never blocks the form.
+  const filled = shares.filter((s) => s.name.trim() || s.amount.trim());
+  const shareAmounts = filled.map((s) => (s.amount.trim() ? parseUsd(s.amount) : null));
   const shareTotal = shareAmounts.reduce<bigint>((sum, a) => sum + (a ?? 0n), 0n);
-  const sharesUsed = shares.some((s) => s.name.trim());
-  const sharesOk = !sharesUsed || (target !== null && shareTotal === target && shares.every((s, i) => s.name.trim() && shareAmounts[i] !== null));
+  const sharesUsed = filled.length > 0;
+  const sharesOk = !sharesUsed || (target !== null && shareTotal === target && filled.every((s, i) => s.name.trim() && shareAmounts[i] !== null));
 
   const scheduleAt = (now: number) => {
     if (timing === "demo") return { dueAt: now + 180, expiresAt: now + 15 * 60 };
@@ -75,6 +73,14 @@ export default function NewPotPage() {
     !sharesOk && "Shares need a name each and must add up to the bill amount.",
   ].filter(Boolean) as string[];
 
+  /** The first person added is you; each new row starts with whatever is still unassigned. */
+  function addPerson() {
+    const left = target !== null && target > shareTotal ? target - shareTotal : 0n;
+    const amount = left > 0n ? (Number(left) / 1e6).toFixed(2) : "";
+    const name = shares.length === 0 && account.name ? account.name : "";
+    setShares([...shares, { name, amount }]);
+  }
+
   function splitEvenly() {
     if (target === null || shares.length === 0) return;
     const n = BigInt(shares.length);
@@ -93,7 +99,7 @@ export default function NewPotPage() {
       payeeName: payee.name,
       reference: reference.trim(),
       note: note.trim(),
-      shares: sharesUsed ? shares.map((s, i) => ({ name: s.name.trim(), amount: shareAmounts[i]!.toString() })) : [],
+      shares: sharesUsed ? filled.map((s, i) => ({ name: s.name.trim(), amount: shareAmounts[i]!.toString() })) : [],
     };
     try {
       setBusy("Waiting for your approval…");
@@ -251,7 +257,7 @@ export default function NewPotPage() {
             ))}
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <Button variant="secondary" size="sm" onClick={() => setShares([...shares, { name: "", amount: "" }])} disabled={shares.length >= 12}>
+            <Button variant="secondary" size="sm" onClick={addPerson} disabled={shares.length >= 12}>
               <Plus className="size-4" /> Add person
             </Button>
             {sharesUsed && target !== null && (
