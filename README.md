@@ -21,7 +21,7 @@ The Nigerian diaspora sends home over $20B a year, and much of it is earmarked f
 - **One pot per bill.** Name the payee, the amount and the due date, list who's covering what, and share the link in the family group.
 - **The payee confirms the bill.** The school or hospital confirms the invoice is real before any money moves. A fake fee notice gets declined, and everyone is refunded.
 - **Money goes to exactly two places.** To the payee, or back to whoever paid. No function takes a destination from the caller, and there's no admin key.
-- **It pays itself.** A Chainlink CRE workflow pays due pots and refunds expired ones every minute. Anyone can also trigger either action, so nothing depends on us.
+- **Anyone can finish it.** A Chainlink CRE workflow is built to pay due pots and refund expired ones (simulated onchain on testnet; deployment pending Chainlink access), and a keeper endpoint does the same. Either action can also be triggered by anyone, so nothing depends on us.
 - **One tap, no gas.** Contributions are a single EIP-3009 signature on AUSD, bound to the pot. Our relayer pays the MON for gas and never holds anyone's money.
 - **Built for the family group.** Names instead of addresses, naira estimates, a WhatsApp share button, and a pot page designed for a phone.
 
