@@ -99,6 +99,23 @@ contract KinpotAutomationTest is KinpotBase {
         automation.onReport("", abi.encode(new uint256[](40), new uint256[](11)));
     }
 
+    function test_constructor_rejectsZeroAddresses() public {
+        vm.expectRevert(KinpotAutomation.ZeroAddress.selector);
+        new KinpotAutomation(Kinpot(address(0)), creForwarder, simForwarder);
+        vm.expectRevert(KinpotAutomation.ZeroAddress.selector);
+        new KinpotAutomation(kinpot, address(0), simForwarder);
+        vm.expectRevert(KinpotAutomation.ZeroAddress.selector);
+        new KinpotAutomation(kinpot, creForwarder, address(0));
+    }
+
+    function test_pending_clampsRangeAndSkipsZeroStart() public {
+        _scenario();
+        vm.warp(block.timestamp + 2 days + 1);
+        // fromId 0 starts at 1, and an oversized count is capped, not reverted.
+        (uint256[] memory rel, uint256[] memory ref) = automation.pending(0, type(uint256).max);
+        assertEq(rel.length + ref.length, 2);
+    }
+
     function test_supportsInterface() public view {
         assertTrue(automation.supportsInterface(type(IReceiver).interfaceId));
         assertTrue(automation.supportsInterface(type(IERC165).interfaceId));

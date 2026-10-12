@@ -26,3 +26,7 @@ automation/.env
 automation/kinpot-keeper/node_modules/
 automation/kinpot-keeper/dist/
 indexer/.envio/
+
+# Chainlink CRE build leftovers
+automation/kinpot-keeper/.cre_build_tmp.js
+automation/kinpot-keeper/dist/

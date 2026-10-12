@@ -1,7 +1,8 @@
 import { BaseError, ContractFunctionRevertedError, decodeFunctionData, isAddress, isHex, parseSignature, type Address, type Hex } from "viem";
 
 import { forwarderAbi, kinpotAbi, mockAusdAbi } from "@/lib/abi";
-import { isNetworkKey, networks, publicClient } from "@/lib/networks";
+import { isNetworkKey, networks, publicClient, type NetworkKey } from "@/lib/networks";
+import { checkBudget, recordRelay } from "@/lib/relay-budget";
 import { submit } from "@/lib/relayer";
 
 export const runtime = "nodejs";
@@ -55,6 +56,15 @@ function explain(error: unknown): string {
     return error.shortMessage;
   }
   return error instanceof Error ? error.message : "The request failed.";
+}
+
+/** Budget check, send, then record. `who` is the address the gas is being spent for. */
+async function paid(network: NetworkKey, who: string, kind: string, call: Parameters<typeof submit>[1]) {
+  const over = await checkBudget(network, who);
+  if (over) return Response.json({ error: over }, { status: 429 });
+  const result = await submit(network, call);
+  await recordRelay(network, who, kind, result.hash);
+  return Response.json(result);
 }
 
 export async function POST(req: Request) {
@@ -112,9 +122,12 @@ export async function POST(req: Request) {
           args: [request],
         });
         if (!valid) return fail("The signature didn't match. Try again.");
-        return Response.json(
-          await submit(network, { address: d.forwarder, abi: forwarderAbi, functionName: "execute", args: [request] }),
-        );
+        return await paid(network, r.from, functionName, {
+          address: d.forwarder,
+          abi: forwarderAbi,
+          functionName: "execute",
+          args: [request],
+        });
       }
 
       case "contribute": {
@@ -123,14 +136,12 @@ export async function POST(req: Request) {
         if (rateLimited(`from:${from}`, 10, 60_000)) return fail("Too many requests. Wait a minute.", 429);
         const sig = parseSignature(signature as Hex);
         const v = sig.v !== undefined ? Number(sig.v) : 27 + (sig.yParity ?? 0);
-        return Response.json(
-          await submit(network, {
-            address: d.kinpot,
-            abi: kinpotAbi,
-            functionName: "contributeWithAuthorization",
-            args: [BigInt(potId), from, BigInt(amount), BigInt(validAfter), BigInt(validBefore), salt, v, sig.r, sig.s],
-          }),
-        );
+        return await paid(network, from, "contribute", {
+          address: d.kinpot,
+          abi: kinpotAbi,
+          functionName: "contributeWithAuthorization",
+          args: [BigInt(potId), from, BigInt(amount), BigInt(validAfter), BigInt(validBefore), salt, v, sig.r, sig.s],
+        });
       }
 
       case "release":
@@ -144,9 +155,8 @@ export async function POST(req: Request) {
           args: [potId],
         });
         if (!ok) return fail(body.action === "release" ? ERROR_TEXT.NotReleasable : ERROR_TEXT.NotRefundable);
-        return Response.json(
-          await submit(network, { address: d.kinpot, abi: kinpotAbi, functionName: body.action, args: [potId] }),
-        );
+        // Anyone can trigger these, so the budget is per caller IP, not per pot.
+        return await paid(network, `ip:${ip}`, body.action, { address: d.kinpot, abi: kinpotAbi, functionName: body.action, args: [potId] });
       }
 
       case "faucet": {
@@ -154,9 +164,7 @@ export async function POST(req: Request) {
         const to = String(body.to);
         if (!isAddress(to)) return fail("Invalid address.");
         if (rateLimited(`faucet:${to}`, 3, 60 * 60_000)) return fail("You've used the faucet a lot. Try again in an hour.", 429);
-        return Response.json(
-          await submit(network, { address: d.ausd, abi: mockAusdAbi, functionName: "mint", args: [to, FAUCET_AMOUNT] }),
-        );
+        return await paid(network, to, "faucet", { address: d.ausd, abi: mockAusdAbi, functionName: "mint", args: [to, FAUCET_AMOUNT] });
       }
 
       default:

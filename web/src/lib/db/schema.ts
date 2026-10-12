@@ -50,6 +50,16 @@ export const profiles = pgTable("profiles", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Every transaction the relayer paid gas for. Backs the daily budgets, so limits hold across serverless instances. */
+export const relayJobs = pgTable("relay_jobs", {
+  id: serial("id").primaryKey(),
+  network: text("network").notNull(),
+  address: text("address").notNull(),
+  kind: text("kind").notNull(),
+  txHash: text("tx_hash").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS pots (
   scope text NOT NULL,
@@ -86,4 +96,14 @@ CREATE TABLE IF NOT EXISTS profiles (
   name text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS relay_jobs (
+  id serial PRIMARY KEY,
+  network text NOT NULL,
+  address text NOT NULL,
+  kind text NOT NULL,
+  tx_hash text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS relay_jobs_recent ON relay_jobs (network, created_at);
+CREATE INDEX IF NOT EXISTS relay_jobs_address ON relay_jobs (address, created_at);
 `;

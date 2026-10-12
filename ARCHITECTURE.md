@@ -174,7 +174,7 @@ Relayer rules (`/api/relay`):
 - Forwarded calls must target `Kinpot`, carry no value, and use an allowlisted function (`createPot`, `confirmBill`, `declineBill`, `cancel`, `claimRefund`). The request must pass `forwarder.verify` and be within its deadline.
 - Every call is simulated first. Forwarded calls are also simulated directly as the signer, because the forwarder hides the inner revert reason, and users should see "Only the payee can do that," not "FailedCall."
 - On Monad you pay for the gas limit you declare, not the gas used, so the relayer sets the limit to the estimate plus 15%.
-- Rate limits apply per IP and per signer (in memory, best effort). The testnet faucet is limited per address.
+- Every transaction the relayer pays for is logged in `relay_jobs`. Daily budgets are enforced from that table, so they hold across serverless instances: on mainnet 25 transactions per address and 300 in total per day, with higher testnet limits. A short per-minute limit also applies in memory, and the testnet faucet is limited per address.
 - Wallet users can skip the relayer and pay their own gas with `contribute`.
 
 ## 6. Off-chain data
