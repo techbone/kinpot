@@ -80,7 +80,7 @@ flowchart LR
 | Neon Postgres | Context only | Profiles, payee directory, bill details, sibling shares, relay log. |
 | Envio HyperIndex | Read model | Indexes `Kinpot` events into pot lists, the payee inbox and the activity feed (GraphQL). |
 | Chainlink CRE workflow | Untrusted trigger | Every minute it reads `KinpotAutomation.pending()` and, if anything is due or expired, sends a signed report of pot IDs to `KinpotAutomation`. |
-| Fallback keeper (`/api/keeper`) | Untrusted trigger | A secret-protected endpoint that reads the same `pending()` and calls `release` / `refund` through the relayer. Any external scheduler can call it; the pot page's "Pay now" and "Send refunds" buttons do the same for one pot. |
+| Fallback keeper (`/api/keeper`) | Untrusted trigger | A secret-protected endpoint that reads the same `pending()` and calls `release` / `refund` through the relayer. A free external scheduler (cron-job.org) calls it every 5 minutes; the pot page's "Pay now" and "Send refunds" buttons do the same for one pot. |
 
 ## 4. Contracts
 

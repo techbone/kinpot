@@ -66,6 +66,8 @@ A testnet pot ran the whole lifecycle through the relayer ([see it live](https:/
 
 **Chainlink CRE paid a pot by itself.** The `kinpot-keeper` workflow (cron → read `pending()` → signed report) found pot #4 covered, confirmed and due, and paid it through the Chainlink forwarder: [report transaction](https://testnet.monadexplorer.com/tx/0x9f20f49a95eb28c1330c089ab4aeb7558b2312f148c7c7fb03f1e068fa62aebc) (`cre workflow simulate --broadcast`).
 
+**Refunds happen on their own.** Pot #6 was paid into but never confirmed by the payee. When its refund date passed, the scheduled keeper refunded the sibling's $1.50 with nobody pressing anything: [refund transaction](https://testnet.monadexplorer.com/tx/0x13900030fd0398532b461afd67c3a9ac3ece732cf588bc4a18825c3a4fcf148b), [pot page](https://kinpot.vercel.app/p/48v4p7nr).
+
 **Envio indexer:** [`indexer.dev.hyperindex.xyz/d5578e2/v1/graphql`](https://indexer.dev.hyperindex.xyz/d5578e2/v1/graphql) powers the activity feed and payout receipts.
 
 **Monad mainnet (143)**, with the real AUSD, verified on Sourcify:
