@@ -24,7 +24,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Runs before first paint: a returning user sees a dashboard placeholder, not the landing page. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("kinpot.passkey")||localStorage.getItem("wagmi.recentConnectorId"))document.documentElement.dataset.session="1"}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="min-h-dvh">
         <Providers>
           <Header />

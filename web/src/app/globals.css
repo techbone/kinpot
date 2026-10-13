@@ -102,3 +102,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
   }
 }
+
+/* Before the app knows who is signed in: returning users get the dashboard placeholder,
+   everyone else gets the landing page. Set by the inline script in layout.tsx. */
+.session-only {
+  display: none;
+}
+html[data-session="1"] .session-only {
+  display: block;
+}
+html[data-session="1"] .guest-only {
+  display: none;
+}

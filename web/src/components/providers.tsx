@@ -64,6 +64,8 @@ export type AccountKind = "passkey" | "wallet";
 
 type AccountState = {
   mounted: boolean;
+  /** True until we know whether someone is signed in (first load, or a wallet reconnecting). */
+  restoring: boolean;
   address?: Address;
   kind?: AccountKind;
   name?: string;
@@ -198,6 +200,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     const kind: AccountKind | undefined = passkey ? "passkey" : wallet.status === "connected" ? "wallet" : undefined;
     return {
       mounted,
+      restoring: !mounted || (!passkey && (wallet.status === "reconnecting" || wallet.status === "connecting")),
       kind,
       address: currentAddress,
       name: passkey?.name || remoteName || undefined,

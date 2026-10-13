@@ -7,11 +7,36 @@ import { useState } from "react";
 import { PotList, usePotList } from "@/components/pot-list";
 import { useAccount, useNetwork } from "@/components/providers";
 import { SignInDialog } from "@/components/sign-in";
-import { Button, Card, Pill, Progress, SectionTitle } from "@/components/ui";
+import { Button, Card, Pill, Progress, SectionTitle, Skeleton } from "@/components/ui";
 
 export default function Home() {
   const account = useAccount();
-  return account.mounted && account.address ? <Dashboard /> : <Landing />;
+  if (account.address) return <Dashboard />;
+  if (account.restoring) {
+    // Before the account loads, CSS picks one of these from the flag set in layout.tsx.
+    return (
+      <>
+        <div className="session-only">
+          <DashboardPlaceholder />
+        </div>
+        <div className="guest-only">
+          <Landing />
+        </div>
+      </>
+    );
+  }
+  return <Landing />;
+}
+
+function DashboardPlaceholder() {
+  return (
+    <div className="pt-10 sm:pt-14" aria-busy="true" aria-label="Loading your pots">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="mt-3 h-4 w-64" />
+      <Skeleton className="mt-10 h-4 w-40" />
+      <Skeleton className="mt-3 h-28 w-full rounded-xl" />
+    </div>
+  );
 }
 
 function Dashboard() {
